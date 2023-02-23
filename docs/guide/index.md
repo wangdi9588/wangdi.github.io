@@ -131,7 +131,7 @@ js之父在设计js原型、原型链的时候遵从以下两个准则
     2. person01.__proto__ == Person.prototype // **准则2：实例（即person01）的__proto__和原型对象指向同一个地方**
 ```
 
-![image-20230220183907833](https://raw.githubusercontent.com/wangdi9588/picture_bed/master/img/image-20230220183907833.png)
+![image-20230220183907833](https://wang-picture-bed.oss-cn-hangzhou.aliyuncs.com/picture_bed/image-20230220183907833.png)
 
 **构造函数有一个prototype属性，引用其原型对象，而这个原型对象也有个constructor属性引用这个构造函数。换句话说，两者循环引用**
 
@@ -290,7 +290,7 @@ console.log(Function.prototype.__proto__ === Object.prototype) // true  //Functi
 
 打印parent1，结果如下：
 
-![image-20230222103712547](https://raw.githubusercontent.com/wangdi9588/picture_bed/master/img/image-20230222103712547.png)
+![image-20230222103712547](https://wang-picture-bed.oss-cn-hangzhou.aliyuncs.com/picture_bed/image-20230222103712547.png)
 
 **原型链的问题：**原型链虽然是实现继承的强大工具，但它也有问题。主要问题出现在原型中包含引用值的时候。原型中包含的引用值会在虽有实例间共享，这也是为什么属性通常会在构造函数中定义而不会定义在原型上的原因。在使用原型实现继承时，原型实际上变成了另一个构造函数的实例。这意味着原先的实例属性摇身一变成为了原型属性。**举个例子（接着上面的案例）**
 
@@ -302,7 +302,7 @@ console.log(child2)
 // 实例child1 和 child2 由Child构造函数 生成，拥有独立的 type属性，他们的[[Prototype]]（__proto__）特性指向 原型对象（new Parent()）,Parent构造函数生成的实例 有 name 和 play 属性（都当作 子构造函数的原型对象属性）
 ```
 
-![image-20230222113354271](https://raw.githubusercontent.com/wangdi9588/picture_bed/master/img/image-20230222113354271.png)
+![image-20230222113354271](https://wang-picture-bed.oss-cn-hangzhou.aliyuncs.com/picture_bed/image-20230222113354271.png)
 
 ```javascript
 child1.age = 30
@@ -316,7 +316,7 @@ console.log(child1)
 console.log(child2)
 ```
 
-![image-20230222114505622](https://raw.githubusercontent.com/wangdi9588/picture_bed/master/img/image-20230222114505622.png)
+![image-20230222114505622](https://wang-picture-bed.oss-cn-hangzhou.aliyuncs.com/picture_bed/image-20230222114505622.png)
 
 **总结：原型链继承缺点**
 
@@ -364,7 +364,7 @@ child.sayHi()  // 同上， child.sayHi() 方法 也会报错  child.sayHi is no
   console.log("🚀 ~ file: index.vue:124 ~ stealConstructor ~ child1:", child1)
 ```
 
-![image-20230222162439407](https://raw.githubusercontent.com/wangdi9588/picture_bed/master/img/image-20230222162439407.png)
+![image-20230222162439407](https://wang-picture-bed.oss-cn-hangzhou.aliyuncs.com/picture_bed/image-20230222162439407.png)
 
 ## 三、call、apply、bind方法
 
