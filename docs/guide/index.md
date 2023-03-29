@@ -377,7 +377,7 @@ console.log("🚀 ~ file: index.vue:124 ~ stealConstructor ~ child1:", child1)
 console.log("🚀 ~ file: index.vue:122 ~ stealConstructor ~ child2:", child2)
 ```
 
-![image-20230224110218980](img/image-20230224110218980.png)
+![image-20230224110218980](https://wang-picture-bed.oss-cn-hangzhou.aliyuncs.com/picture_bed/image-20230224110218980.png)
 
 **总结：原型链继承优缺点**
 
@@ -423,7 +423,7 @@ console.log(child.__proto__ === Parent.prototype)  // false  child实例 原型�
 console.log(child.__proto__.__proto__ === Parent.prototype) // true child实例的[[Prototype]]特性 指向 Parent构造函数生成的实例，该实例的[[Prototype]]特性指向Parent构造函数的原型对象 （Parent.prototype）
 ```
 
-![image-20230224135158079](img/image-20230224135158079.png)
+![image-20230224135158079](https://wang-picture-bed.oss-cn-hangzhou.aliyuncs.com/picture_bed/image-20230224135158079.png)
 
 ```javascript
   const child1 = new Child("犬夜叉", "犬大将");
@@ -433,7 +433,7 @@ console.log(child.__proto__.__proto__ === Parent.prototype) // true child实例�
   console.log( "🚀 ~ file: index.vue ~ line 153 ~ temCompositionInherite ~ child2", child2);
 ```
 
-![image-20230224135918631](img/image-20230224135918631.png)
+![image-20230224135918631](https://wang-picture-bed.oss-cn-hangzhou.aliyuncs.com/picture_bed/image-20230224135918631.png)
 
 在调用子构造函数生成 子实例时，通过 call绑定 调用了一次 父构造函数，将父构造函数内的方法和属性 继承为  子实例自身属性。又将 子构造函数的原型对象指向 父构造函数生成的实例，导致 子构造函数的原型对象里 有和子实例属性、方法重名的， 虽然访问时会被子构造函数的同名实例属性所覆盖。
 
@@ -478,7 +478,7 @@ console.log(child.__proto__.__proto__ === Parent.prototype) // true child实例�
   console.log(p1.__proto__ === Person);  // true
 ```
 
-![image-20230224173423704](img/image-20230224173423704.png)
+![image-20230224173423704](https://wang-picture-bed.oss-cn-hangzhou.aliyuncs.com/picture_bed/image-20230224173423704.png)
 
 ```javascript
 p1.name = "p1";
@@ -491,9 +491,9 @@ console.log("🚀 ~ file: index.vue ~ line 63 ~ temPrototypeInherite ~ p1", p1);
 console.log("🚀 ~ file: index.vue ~ line 64 ~ temPrototypeInherite ~ p2", p2);
 ```
 
-![image-20230224173627397](img/image-20230224173627397.png)
+![image-20230224173627397](https://wang-picture-bed.oss-cn-hangzhou.aliyuncs.com/picture_bed/image-20230224173627397.png)
 
-![image-20230224174748213](C:\pro\demo\wangdi9588.github.io\docs\guide\img\image-20230224174748213.png)
+![image-20230224174748213](https://wang-picture-bed.oss-cn-hangzhou.aliyuncs.com/picture_bed/image-20230224174748213.png)
 
 原型式继承非常适合不需要单独创建构造函数，但仍然需要在对象间共享信息的场合。但是属性中包含的引用值始终会在相关对象间共享，跟使用原型模式一样的。
 
