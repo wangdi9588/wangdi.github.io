@@ -264,9 +264,9 @@ console.log(Function.prototype.__proto__ === Object.prototype) // true  //Functi
 
 #### 8.继承
 
-1. 原型链继承（**prototype模式**）
+##### （一）原型链继承
 
-> 原型链继承是将 **子构造函数**的原型对象，指向 ***父构造函数***生成的实例上，通过原型链，**子构造函数**生成的实例 可以访问到 **父构造函数**中的属性和方法。
+> 原型链继承（**prototype模式**）是将 **子构造函数**的原型对象，指向 ***父构造函数***生成的实例上，通过原型链，**子构造函数**生成的实例 可以访问到 **父构造函数**中的属性和方法。
 
 ```javascript
   function Parent() {
@@ -324,9 +324,9 @@ console.log(child2)
 - 原型是所有实例共享的，通过实例对原型上引用属性进行修改时，会影响到每个实例上
 - 构造函数在实例化时，不能给父构造函数传参
 
-2.通过盗用构造函数的形式  实现继承
+##### （二）盗用构造函数
 
-> 为了解决原型包含 引用类型 导致的继承问题，通过 call/apply在子构造函数内执行 父构造函数（将父构造函数内的this 指向 子构造函数）
+> 为了解决原型包含 引用类型 导致的继承问题，通过 call/apply在子构造函数内执行 父构造函数（将父构造函数内的this 指向 子构造函数）。通过盗用构造函数的形式实现继承
 
 ```javascript
   const Parent = function (name) {
@@ -341,6 +341,7 @@ console.log(child2)
   };
   Parent.prototype.address = "妖皇星";
   const Child = function (type, name) {
+    // 最好先调用父构造函数，之后再添加子构造函数属性。以免属性被覆盖
     Parent.call(this, name);
     this.type = type;
   };
@@ -355,16 +356,266 @@ console.log(child.address)  // undefined  由上行说明可以看出 由于 add
 child.sayHi()  // 同上， child.sayHi() 方法 也会报错  child.sayHi is not a function
 ```
 
+由此可见，要想子构造函数 能继承父构造函数的方法，就不能将方法 挂载到 父构造函数的原型对象内，只能定义在父构造函数内（这样会导致由子构造函数生成实例时，每个实例都会创建一次 父构造函数内的方法）
+
 接着往下看，由Child构造函数生成2个实例，打印看下结果
 
 ```javascript
   const child1 = new Child("悟饭", "悟空");
   const child2 = new Child("犬夜叉", "犬大将");
-  console.log("🚀 ~ file: index.vue:122 ~ stealConstructor ~ child2:", child2)
   console.log("🚀 ~ file: index.vue:124 ~ stealConstructor ~ child1:", child1)
+  console.log("🚀 ~ file: index.vue:122 ~ stealConstructor ~ child2:", child2)
 ```
 
-![image-20230222162439407](https://wang-picture-bed.oss-cn-hangzhou.aliyuncs.com/picture_bed/image-20230222162439407.png)
+<img src="https://wang-picture-bed.oss-cn-hangzhou.aliyuncs.com/picture_bed/image-20230222162439407.png" alt="image-20230222162439407" style="zoom: 200%;" />
+
+父构造函数中的属性 就会当成 子构造函数生成的实例 的 自有属性了。这样的话，改变child1 实例中的 引用类型属性 不会影响其他实例属性。
+
+```javascript
+child1.colors.push('yellow')
+console.log("🚀 ~ file: index.vue:124 ~ stealConstructor ~ child1:", child1)
+console.log("🚀 ~ file: index.vue:122 ~ stealConstructor ~ child2:", child2)
+```
+
+![image-20230224110218980](img/image-20230224110218980.png)
+
+**总结：原型链继承优缺点**
+
+1. 优点
+   - 解决了 原型链继承的弊端（修改某个实例上的引用属性，不会影响到其他实例）
+   - 可以在子构造函数中给父构造函数传参
+2. 缺点
+   - 只能继承父构造函数的实例属性和方法，不能继承父构造函数原型属性上的属性和方法  即 子构造函数的实例 原型链上指不到 父构造函数的prototype
+   - 方法都在构造函数中定义了，每次创建实例都会创建一遍方法，函数没有复用
+
+##### （三）组合继承
+
+> 组合继承：原型链继承 + 盗用构造函数继承，将两者的优点集中了起来，基本的思路是使用原型链继承 原型上的属性和方法，而通过盗用构造函数继承实例属性。这样既可以把方法定义在原型上以实现重用，又可以让每个实例都有自己的属性。
+
+```javascript
+  const Parent = function (name) {
+    this.name = name;
+    this.colors = ["red", "green", "blue"];
+    this.getName = function () {
+      console.log(`I am ${this.name}`);
+    };
+  };
+  Parent.prototype.sayHi = function () {
+    console.log(`Hi!,good son`);
+  };
+  Parent.prototype.address = "妖皇星";
+  // 盗用构造函数
+  const Child = function (type, name) {
+    Parent.call(this, name);
+    this.type = type;
+  };
+  // 原型链继承
+  Child.prototype = new Parent();
+  // 校正构造函数   Child的原型对象的 constructor 属性 指向Child构造函数本身
+  Child.prototype.constructor = Child;
+
+
+const parent = new Parent('父构造函数')
+
+const child = new Child('子构造函数','父构造函数')
+
+console.log(child.__proto__ === Parent.prototype)  // false  child实例 原型链 不指向 父构造函数Parent的原型对象
+console.log(child.__proto__.__proto__ === Parent.prototype) // true child实例的[[Prototype]]特性 指向 Parent构造函数生成的实例，该实例的[[Prototype]]特性指向Parent构造函数的原型对象 （Parent.prototype）
+```
+
+![image-20230224135158079](img/image-20230224135158079.png)
+
+```javascript
+  const child1 = new Child("犬夜叉", "犬大将");
+  const child2 = new Child("悟饭", "悟空");
+  child2.address = "七龙珠";
+  console.log( "🚀 ~ file: index.vue ~ line 151 ~ temCompositionInherite ~ child1", child1);
+  console.log( "🚀 ~ file: index.vue ~ line 153 ~ temCompositionInherite ~ child2", child2);
+```
+
+![image-20230224135918631](img/image-20230224135918631.png)
+
+在调用子构造函数生成 子实例时，通过 call绑定 调用了一次 父构造函数，将父构造函数内的方法和属性 继承为  子实例自身属性。又将 子构造函数的原型对象指向 父构造函数生成的实例，导致 子构造函数的原型对象里 有和子实例属性、方法重名的， 虽然访问时会被子构造函数的同名实例属性所覆盖。
+
+注意：其实在构造函数内应避免 定义方法。
+
+```javascript
+  console.log(child1 instanceof Child, "child1 instanceof Child");  // true  Child.prototype 在 child1实例的原型链上
+  console.log(child1 instanceof Parent, "child1 instanceof Parent"); // true  Parent.prototype 在 child1实例的原型链上
+  console.log(child1 instanceof Object, "child1 instanceof Object"); // true  Object.prototype 在 child1实例的原型链上
+  // isPrototypeOf() 是 Object函数（类）的下的一个方法，用于判断当前对象是否为另外一个对象的原型，如果是就返回 true，否则就返回 false。
+  console.log(Child.isPrototypeOf(child1), "Child.isPrototypeOf(child1)"); // false
+  console.log(Child.prototype.isPrototypeOf(child1), "Child.prototype.isPrototypeOf(child1)"); // true 
+  console.log(Parent.prototype.isPrototypeOf(child1), "Parent.prototype.isPrototypeOf(child1)"); // true 
+  console.log( Object.prototype.isPrototypeOf(child1), "Object.prototype.isPrototypeOf(child1)"); // true 
+```
+
+**总结：组合继承缺点**
+
+- 父构造函数的实例属性 依然会存在于 子构造函数的原型上，虽然访问时会被子构造函数的同名实例属性所覆盖
+- 继承过程中调用了两次 父构造函数，一次是 call（new 子构造函数）
+
+##### （四）原型式继承
+
+> 这种方法并没有使用严格意义上的构造函数，思想是借助原型可以基于已有的对象创建新对象，同时还不必因此创建自定义类型。
+
+```javascript
+  // 在 MyCreat 函数内部，先创建了一个临时性的构造函数，然后将传入的对象 作为这个构造函数的原型，最后返回这个临时构造函数的 一个新实例，本质上 MyCreat()就是完成了一次浅复制
+  const MyCreat = function (o) {
+    function Fn() {}
+    Fn.prototype = o;
+    Fn.prototype.constructor = Fn;
+    return new Fn();
+  };
+  const Person = {
+    name: "小王",
+    friends: ["张三", "李四"],
+  };
+  const p1 = MyCreat(Person);
+  const p2 = MyCreat(Person);
+  console.log("🚀 ~ file: index.vue ~ line 61 ~ temPrototypeInherite ~ p1", p1);
+  console.log("🚀 ~ file: index.vue ~ line 62 ~ temPrototypeInherite ~ p2", p2);
+  console.log(p1.__proto__ === Person);  // true
+```
+
+![image-20230224173423704](img/image-20230224173423704.png)
+
+```javascript
+p1.name = "p1";
+console.log("🚀 ~ file: index.vue ~ line 61 ~ temPrototypeInherite ~ p1", p1, p1.name);
+console.log("🚀 ~ file: index.vue ~ line 62 ~ temPrototypeInherite ~ p2", p2);
+
+debugger
+p1.firends.push('小p')
+console.log("🚀 ~ file: index.vue ~ line 63 ~ temPrototypeInherite ~ p1", p1);
+console.log("🚀 ~ file: index.vue ~ line 64 ~ temPrototypeInherite ~ p2", p2);
+```
+
+![image-20230224173627397](img/image-20230224173627397.png)
+
+![image-20230224174748213](C:\pro\demo\wangdi9588.github.io\docs\guide\img\image-20230224174748213.png)
+
+原型式继承非常适合不需要单独创建构造函数，但仍然需要在对象间共享信息的场合。但是属性中包含的引用值始终会在相关对象间共享，跟使用原型模式一样的。
+
+> **ECMAScript5**通过新增**Object.create()**方法规范化了原型式继承，这个方法接收两个参数：一个用作新对象原型的对象和为新对象定义属性的对象。当只有一个参数时，`Objece.create()`与上面的MyCreat方法效果一样：
+
+```javascript
+let Person = {
+    name:'小王',
+    friends:['张三', '李四']
+}
+let p1 = Object.create(Person)
+p1.name = '小张'
+p1.friends.push('小张')
+console.log(p1.name);   //小张
+console.log(p1.friends);    //[ '张三', '李四', '小张' ]
+
+let p2 = Object.create(Person)
+p2.friends.push('小李')
+console.log(p2.name);   //小王
+console.log(p2.friends);    //[ '张三', '李四', '小张', '小李' ]
+```
+
+其实`Object.create()`的原理用下面一段代码就能说明：
+
+```javascript
+let p1 = {}
+Object.setPrototypeOf(p1, Person)
+```
+
+就是把对象p1的内部属性[[portotype]]设置成了Person。可以验证一下：
+
+```javascript
+let Person = {
+    name:'小王',
+    friends:['张三', '李四']
+}
+let p1 = Object.create(Person)
+
+console.log(Object.getPrototypeOf(p1) === Person);  //true
+console.log(p1.__proto__ === Person);  //true
+```
+
+`Object.create()`的第二个参数与`Object.defineProperties()`的第二个参数一样。以这种方式新增的属性会遮蔽原型对象(也就是第一个参数)上面的属性:
+
+```javascript
+let Person = {
+    name:'小王',
+    friends:['张三', '李四']
+}
+let p1 = Object.create(Person, {
+    name:{
+        value:'小张',
+        enumerable:true,
+        writable:true,
+        configurable:true
+    }
+})
+console.log(p1.name);   //小张
+```
+
+##### （五）寄生式继承
+
+> 寄生式继承是与原型式继承紧密相关的一种思路，即创建一个仅用于封装继承函数过程的函数，该函数在内部以某种方式来增强对象，最后返回对象
+
+```javascript
+ const MyCreat = function (o) {
+    function Fn() {}
+    Fn.prototype = o;
+    Fn.prototype.constructor = Fn;
+    return new Fn();
+  };
+
+function createObj(original){
+    const createdTarget = MyCreat(original)
+    createdTarget.sayHi = function (){
+        console.log('hi!')
+    }
+    return createdTarget
+}
+
+const person = {
+    name: 'alice',
+    friends: ['Sherly', 'Taissy', 'Vant']
+}
+const child = createObj(person)
+child.sayHi() // hi!
+console.log(child.friends)  // ['Sherly', 'Taissy', 'Vant']
+child.friends.push('hany')
+console.log(child.friends)  // ['Sherly', 'Taissy', 'Vant', 'hany']
+console.log(person.friends) // ['Sherly', 'Taissy', 'Vant', 'hany']
+```
+
+**总结：寄生式继承缺点**
+
+- 原型链继承多个实例的引用类型属性指向相同，存在篡改的风险。
+- 无法传递参数
+
+##### （六）寄生式组合继承
+
+```javascript
+function inheritPrototype(child, parent){
+    const prototype = MyCreat(parent.prototype) // 创建父类原型的 浅复制
+    prototype.constructor = child
+    child.prototype = prototype
+}
+function Parent(name){
+    this.name = name;
+    this.colors = ["red", "blue", "green"];
+}
+
+SuperType.prototype.sayName = function(){
+    console.log(this.name)
+};
+
+function Child(name, age){
+    Parent.call(this, name);
+    this.age = age;
+}
+inheritPrototype(Child, Parent)
+```
+
+
 
 ## 三、call、apply、bind方法
 
